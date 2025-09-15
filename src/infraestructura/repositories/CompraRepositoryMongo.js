@@ -1,55 +1,42 @@
-import Compra from "../../domain/models/Compra.js";
+import mongoose from "mongoose";
 
-/**
- * Repositorio para gestionar compras en MongoDB usando el modelo Compra.
- * Proporciona métodos para crear, consultar, actualizar y eliminar compras.
- */
+const CompraSchema = new mongoose.Schema({
+  producto: String,
+  cantidad: Number,
+  precio: Number,
+  cliente: String,
+  fecha: { type: Date, default: Date.now }
+});
+
+const CompraModel = mongoose.model("Compra", CompraSchema);
+
+
 class CompraRepositoryMongo {
-  /**
-   * Crea una nueva compra en la base de datos.
-   * @param {Object} compra - Objeto con los datos de la compra a crear.
-   * @returns {Promise<Object>} La compra recién creada.
-   */
-  async create(compra) {
-    const nueva = new Compra(compra);
-    return await nueva.save();
+  async create(data) {
+    const compra = new CompraModel(data);
+    return await compra.save();
   }
 
-  /**
-   * Obtiene todas las compras registradas, ordenadas por fecha descendente.
-   * @returns {Promise<Array>} Lista de compras.
-   */
+  async getAll() {
+    return await CompraModel.find();
+  }
+
   async findAll() {
-    return await Compra.find().sort({ fecha: -1 });
+    // Alias para compatibilidad con casos de uso que llaman findAll
+    return await this.getAll();
   }
 
-  /**
-   * Obtiene una compra por su ID.
-   * @param {string} id - ID de la compra a buscar.
-   * @returns {Promise<Object|null>} La compra encontrada o null si no existe.
-   */
-  async findById(id) {
-    return await Compra.findById(id);
+  async getById(id) {
+    return await CompraModel.findById(id);
   }
 
-  /**
-   * Actualiza una compra por su ID.
-   * @param {string} id - ID de la compra a actualizar.
-   * @param {Object} data - Objeto con los datos a actualizar.
-   * @returns {Promise<Object|null>} La compra actualizada o null si no existe.
-   */
   async updateById(id, data) {
-    return await Compra.findByIdAndUpdate(id, data, { new: true });
+    return await CompraModel.findByIdAndUpdate(id, data, { new: true });
   }
 
-  /**
-   * Elimina una compra por su ID.
-   * @param {string} id - ID de la compra a eliminar.
-   * @returns {Promise<Object|null>} La compra eliminada o null si no existe.
-   */
   async deleteById(id) {
-    return await Compra.findByIdAndDelete(id);
+    return await CompraModel.findByIdAndDelete(id);
   }
 }
 
-export default new CompraRepositoryMongo();
+export default CompraRepositoryMongo;

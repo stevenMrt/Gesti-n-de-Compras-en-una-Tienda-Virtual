@@ -1,40 +1,40 @@
 import "dotenv/config.js";
 import express from "express";
-import cors from "cors";
-import compraRoutes from "./infraestructura/routers/CompraRouters.js";
-import connectDB from "./config/database.js";
+import mongoose from "mongoose";
 
-/**
- * @file Servidor principal de la API de Compras
- * @description Configura Express, middlewares, rutas y conexión a la base de datos.
- */
+// Routers
+import compraRoutes from "./infraestructura/routers/CompraRouters.js";
+import clienteRoutes from "./infraestructura/routers/ClienteRouters.js";
+import userRoutes from "./infraestructura/routers/UserRouters.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-/**
- * Middlewares
- */
-app.use(cors()); // Habilita CORS
-app.use(express.json()); // Parseo de JSON en requests
+// Middleware JSON
+app.use(express.json());
 
-/**
- * Rutas de la API
- * @route /compras
- */
+// Rutas
 app.use("/compras", compraRoutes);
+app.use("/cliente", clienteRoutes);
+app.use("/api/users", userRoutes);
 
-/**
- * Conexión a la base de datos y arranque del servidor
- */
-connectDB()
-  .then(() => {
+// Ruta raíz
+app.get("/", (req, res) => {
+});
+
+// Conexión Mongo y levantar servidor
+const startServer = async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log("✅ Conectado a MongoDB");
+
     app.listen(PORT, () => {
-      console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
-    });
-  })
-  .catch((err) => {
-    console.error("❌ Error al conectar a la base de datos:", err.message);
-  });
+console.log(`🚀 Servidor corriendo en: http://localhost:${PORT}`);    });
+  } catch (err) {
+    console.error("❌ Error al conectar MongoDB:", err.message);
+  }
+};
+
+startServer();
 
 export default app;

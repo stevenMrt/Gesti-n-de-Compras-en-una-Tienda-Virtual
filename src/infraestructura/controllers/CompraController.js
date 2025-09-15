@@ -1,99 +1,78 @@
-import CreateCompra from "../../application/use-cases/CreateCompra.js";
-import GetCompras from "../../application/use-cases/GetCompras.js";
-import GetCompraById from "../../application/use-cases/GetCompraById.js";
-import UpdateCompra from "../../application/use-cases/UpdateCompra.js";
-import DeleteCompra from "../../application/use-cases/DeleteCompra.js";
+// src/controllers/CompraController.js
+import mongoose from "mongoose";
 
-/**
- * @typedef {Object} Item
- * @property {string} producto - Nombre del producto.
- * @property {number} cantidad - Cantidad del producto.
- * @property {number} precio - Precio unitario del producto.
- *
- * @typedef {Object} Direccion
- * @property {string} [calle] - Calle de la dirección.
- * @property {string} [ciudad] - Ciudad de la dirección.
- *
- * @typedef {Object} Compra
- * @property {string} cliente - Nombre del cliente.
- * @property {string} telefono - Teléfono del cliente.
- * @property {Date} fecha - Fecha de la compra.
- * @property {Item[]} items - Lista de productos de la compra.
- * @property {boolean} domicilio - Indica si la compra es a domicilio.
- * @property {Direccion} [direccion] - Dirección de envío (opcional).
- * @property {number} total - Total de la compra.
- */
+// Modelo de ejemplo en memoria (sin archivo externo)
+const CompraSchema = new mongoose.Schema({
+  producto: { type: String, required: true },
+  cantidad: { type: Number, required: true },
+  precio: { type: Number, required: true },
+});
 
-class CompraController {
-  /**
-   * Crea una nueva compra.
-   * @param {import("express").Request} req
-   * @param {import("express").Response} res
-   */
-  async create(req, res) {
-    try {
-      const compra = await CreateCompra(req.body);
-      res.status(201).json(compra);
-    } catch (err) {
-      res.status(400).json({ error: err.message });
-    }
+const Compra = mongoose.models.Compra || mongoose.model("Compra", CompraSchema);
+
+// GET /compras - listar todas las compras
+export const getCompras = async (req, res) => {
+  console.log(">>> Entrando a getCompras");
+  try {
+    const compras = await Compra.find();
+    res.json(compras);
+  } catch (error) {
+    console.error("Error en getCompras:", error.message);
+    res.status(500).json({ error: "Error obteniendo compras" });
   }
+};
 
-  /**
-   * Obtiene todas las compras.
-   * @param {import("express").Request} req
-   * @param {import("express").Response} res
-   */
-  async getAll(req, res) {
-    try {
-      const compras = await GetCompras();
-      res.json(compras);
-    } catch (err) {
-      res.status(500).json({ error: err.message });
-    }
+// POST /compras - crear nueva compra
+export const createCompra = async (req, res) => {
+  console.log(">>> Entrando a createCompra con body:", req.body);
+  try {
+    const nuevaCompra = new Compra(req.body);
+    const compraGuardada = await nuevaCompra.save();
+    res.status(201).json(compraGuardada);
+  } catch (error) {
+    console.error("Error en createCompra:", error.message);
+    res.status(500).json({ error: "Error creando compra" });
   }
+};
 
-  /**
-   * Obtiene una compra por su ID.
-   * @param {import("express").Request} req
-   * @param {import("express").Response} res
-   */
-  async getById(req, res) {
-    try {
-      const compra = await GetCompraById(req.params.id);
-      res.json(compra);
-    } catch (err) {
-      res.status(404).json({ error: err.message });
-    }
+// GET /compras/:id - obtener compra por id
+export const getComprasById = async (req, res) => {
+  const { id } = req.params;
+  console.log(">>> Entrando a getComprasById con id:", id);
+  try {
+    const compra = await Compra.findById(id);
+    if (!compra) return res.status(404).json({ error: "Compra no encontrada" });
+    res.json(compra);
+  } catch (error) {
+    console.error("Error en getComprasById:", error.message);
+    res.status(500).json({ error: "Error obteniendo compra" });
   }
+};
 
-  /**
-   * Actualiza una compra por su ID.
-   * @param {import("express").Request} req
-   * @param {import("express").Response} res
-   */
-  async update(req, res) {
-    try {
-      const updated = await UpdateCompra(req.params.id, req.body);
-      res.json(updated);
-    } catch (err) {
-      res.status(404).json({ error: err.message });
-    }
+// PUT /compras/:id - actualizar compra por id
+export const updateComprasById = async (req, res) => {
+  const { id } = req.params;
+  console.log(">>> Entrando a updateComprasById con id:", id, "y body:", req.body);
+  try {
+    const compraActualizada = await Compra.findByIdAndUpdate(id, req.body, { new: true });
+    if (!compraActualizada) return res.status(404).json({ error: "Compra no encontrada" });
+    res.json(compraActualizada);
+  } catch (error) {
+    console.error("Error en updateComprasById:", error.message);
+    res.status(500).json({ error: "Error actualizando compra" });
   }
+};
 
-  /**
-   * Elimina una compra por su ID.
-   * @param {import("express").Request} req
-   * @param {import("express").Response} res
-   */
-  async delete(req, res) {
-    try {
-      const deleted = await DeleteCompra(req.params.id);
-      res.json({ message: "Compra eliminada", deleted });
-    } catch (err) {
-      res.status(404).json({ error: err.message });
-    }
+// DELETE /compras/:id - eliminar compra por id
+export const deleteComprasById = async (req, res) => {
+  const { id } = req.params;
+  console.log(">>> Entrando a deleteComprasById con id:", id);
+  try {
+    const compraEliminada = await Compra.findByIdAndDelete(id);
+    if (!compraEliminada) return res.status(404).json({ error: "Compra no encontrada" });
+    res.json({ message: "Compra eliminada correctamente" });
+  } catch (error) {
+    console.error("Error en deleteComprasById:", error.message);
+    res.status(500).json({ error: "Error eliminando compra" });
   }
-}
-
-export default new CompraController();
+};

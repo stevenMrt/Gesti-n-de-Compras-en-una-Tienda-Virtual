@@ -1,51 +1,55 @@
-import mongoose from "mongoose";
-
 /**
- * @typedef {Object} Item
- * @property {string} producto - Nombre del producto.
- * @property {number} cantidad - Cantidad del producto.
- * @property {number} precio - Precio unitario del producto.
+ * Modelo de dominio que representa una Compra.
  */
-const ItemSchema = new mongoose.Schema({
-  producto: { type: String, required: true },
-  cantidad: { type: Number, required: true },
-  precio: { type: Number, required: true }
-});
+class Compra {
+  /**
+   * Crea una nueva instancia de Compra.
+   * @param {Object} params - Parámetros para inicializar la compra.
+   * @param {string|null} [params.id=null] - Identificador único de la compra (puede ser asignado por la BD).
+   * @param {string} params.cliente - Nombre o identificador del cliente que realiza la compra.
+   * @param {string} params.telefono - Teléfono de contacto del cliente.
+   * @param {Date|string} params.fecha - Fecha de la compra.
+   * @param {Array<Object>} params.items - Lista de productos o servicios adquiridos.
+   * @param {boolean} params.domicilio - Indica si la compra incluye domicilio/envío.
+   * @param {Object|null} [params.direccion=null] - Dirección de envío. 
+   * @param {string} params.direccion.calle - Calle de la dirección.
+   * @param {string} params.direccion.ciudad - Ciudad de la dirección.
+   * @param {number} params.total - Valor total de la compra.
+   */
+  constructor({
+    id = null,
+    cliente,
+    telefono,
+    fecha,
+    items,
+    domicilio,
+    direccion, // { calle, ciudad }
+    total,
+  }) {
+    /** @type {string|null} */
+    this.id = id;
 
-/**
- * @typedef {Object} Direccion
- * @property {string} [calle] - Calle de la dirección.
- * @property {string} [ciudad] - Ciudad de la dirección.
- */
-const DireccionSchema = new mongoose.Schema({
-  calle: { type: String },
-  ciudad: { type: String }
-});
+    /** @type {string} */
+    this.cliente = cliente;
 
-/**
- * @typedef {Object} Compra
- * @property {string} cliente - Nombre del cliente.
- * @property {string} telefono - Teléfono del cliente.
- * @property {Date} fecha - Fecha de la compra.
- * @property {Item[]} items - Lista de productos de la compra.
- * @property {boolean} domicilio - Indica si la compra es a domicilio.
- * @property {Direccion} [direccion] - Dirección de envío (opcional).
- * @property {number} total - Total de la compra.
- */
-const CompraSchema = new mongoose.Schema({
-  cliente: { type: String, required: true },
-  telefono: { type: String, required: true },
-  fecha: { type: Date, default: Date.now },
-  items: { type: [ItemSchema], required: true },
-  domicilio: { type: Boolean, default: false },
-  direccion: { type: DireccionSchema },
-  total: { type: Number, required: true }
-});
+    /** @type {string} */
+    this.telefono = telefono;
 
-/**
- * Modelo de Mongoose para las compras.
- * @type {mongoose.Model<Compra>}
- */
-const Compra = mongoose.model("Compra", CompraSchema);
+    /** @type {Date} */
+    this.fecha = new Date(fecha);
 
-export default Compra;
+    /** @type {Array<Object>} */
+    this.items = items;
+
+    /** @type {boolean} */
+    this.domicilio = domicilio;
+
+    /** @type {Object|null} */
+    this.direccion = direccion ?? null;
+
+    /** @type {number} */
+    this.total = total;
+  }
+}
+
+export default Compra; // Exporta la clase para usarla en otras capas del proyecto
